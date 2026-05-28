@@ -212,31 +212,49 @@ if st.button("✨ 點我製作早安圖"):
         # 🎲 隨機抽取一句金句
         selected_quote = random.choice(quotes_list)
         
-        # 🎲 隨機百變圖庫：融合長輩們最喜歡的多元場景與元素
-        subjects = [
-            "可愛的貓咪", "活潑的小狗", "毛茸茸的兔子", "朝氣的小雞", 
-            "純真快樂的小孩", "笑容滿面的男生", "溫柔優雅的女生", 
-            "一杯冒著熱氣的茶", "一張放著盆栽的精緻咖啡桌", "盛開的蓮花"
-        ]
-        backgrounds = [
-            "寧靜的湖畔", "溫馨的咖啡廳裡面", "翠綠的茶園中", 
-            "寬廣的綠草地", "藍天白雲的風景", "陽光灑落的海岸邊", 
-            "壯闊的蔚藍大海", "雲霧繚繞的山水畫場景"
-        ]
+        # ==========================================
+        # 🧠 新增：讓 Python 來當聰明的過濾器
+        # ==========================================
+        clean_input = prompt_input.strip()
+        use_random_gallery = False
         
-        # 每次按下按鈕，都隨機抽一個主體和一個背景
-        random_subject = random.choice(subjects)
-        random_bg = random.choice(backgrounds)
+        # 規則 1：如果只有一個字 (例如: 1, A, ㄅ, 早)，且不是常見的物品，就啟動隨機圖庫
+        valid_single_chars = ['貓', '狗', '豬', '花', '山', '海', '樹', '鳥', '雲', '魚', '河', '湖', '茶']
+        if len(clean_input) <= 1 and clean_input not in valid_single_chars:
+            use_random_gallery = True
+            
+        # 規則 2：如果全部都是英文字母、數字或標點符號 (例如: 123, abc, ---)
+        elif clean_input.isascii():
+            use_random_gallery = True
+            
+        # 規則 3：如果是無法具體畫出來的問候語或心情
+        elif clean_input in ['早安', '大家早', '你好', '好', '讚', '平安', '開心', '快樂']:
+            use_random_gallery = True
+            
+        # 🎯 根據過濾結果，決定最後要交給 AI 畫什麼指令
+        if use_random_gallery:
+            subjects = [
+                "可愛的貓咪", "活潑的小狗", "毛茸茸的兔子", "朝氣的小雞", 
+                "純真快樂的小孩", "笑容滿面的男生", "溫柔優雅的女生", 
+                "一杯冒著熱氣的茶", "一張放著盆栽的精緻咖啡桌", "盛開的蓮花"
+            ]
+            backgrounds = [
+                "寧靜的湖畔", "溫馨的咖啡廳裡面", "翠綠的茶園中", 
+                "寬廣的綠草地", "藍天白雲的風景", "陽光灑落的海岸邊", 
+                "壯闊的蔚藍大海", "雲霧繚繞的山水畫場景"
+            ]
+            draw_target = f"『{random.choice(subjects)}，場景搭配{random.choice(backgrounds)}』"
+        else:
+            # 長輩輸入了具體的事物 (例如：河流、蘋果)
+            draw_target = f"『{clean_input}』"
         
         with st.spinner("電腦畫家中，請稍候約 15 秒..."):
             for attempt in range(3):
                 try:
-                    # 🖼️ 進階防呆提示詞：組合長輩的輸入與我們的隨機題庫
+                    # 🖼️ 乾淨俐落的提示詞，AI 絕對不會再被混淆了！
                     full_prompt = (
                         f"一張極度美麗的溫馨攝影照片，風格明亮、充滿朝氣，非常適合長輩作為早安圖。 "
-                        f"畫面主要靈感來自：'{prompt_input}'。 "
-                        f"【重要指示】如果前面的靈感內容只是無意義的符號、注音、單一數字字母，或是難以直接畫出具體物品，"
-                        f"請自動忽略它，改為畫這個主題：『{random_subject}，場景搭配{random_bg}』。 "
+                        f"畫面主題請明確畫出：{draw_target}。 "
                         f"畫面中心偏下方請稍微留白。絕對不要在圖片中生成任何文字、浮水印或字母。"
                     )
                     
